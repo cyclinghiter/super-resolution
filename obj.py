@@ -270,6 +270,10 @@ class SMMarray(_array_object):
         self.S11 = np.zeros(self.shape, dtype='complex128')
 
 class FieldRecorder(_array_object):
+    
+    """
+    Array object that records the field.
+    """
     def __init__(self, x, y, z):
         super(FieldRecorder, self).__init__(x,y,z)
         self._E = np.zeros((3,*self.shape), dtype='complex128')

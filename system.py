@@ -10,6 +10,49 @@ import function
 
 
 class Container():
+    """
+    Container object for simulation
+    
+    Parameters :
+    ---------------------------------------------------
+    ---------------------------------------------------
+    
+    objects : set of object involved in the container
+    ---------------------------------------------------
+    
+    greens : dictionary of grenns function for two objects 
+           : self.greens[obj1][obj2] returns propagation function of two objects
+    ---------------------------------------------------
+    
+    antenna : antenna of Simulation. if other source not exists, 
+              it acts as the transceiver.
+    ---------------------------------------------------
+    
+    recorder : recorder of the field. if one wants to record the full-field, 
+               it must be appended before simulation.
+    ---------------------------------------------------
+    
+    planewavegenerator : source object. this object propagates plane wave to other object.
+    
+    
+    Methods:
+    ---------------------------------------------------
+    ---------------------------------------------------
+    
+    append : append object to the Container. In this process, 
+             Green function with other object in the container is calculated.
+             
+    ---------------------------------------------------
+    
+    propagate : calculate obj2's field by 
+                (power of obj1) * (green function between obj1,obj2)
+    ---------------------------------------------------
+    
+    experiment : Full simulation for the route of waves that propagate less than max_degree.
+    
+    """
+    
+    
     def __init__(self, k0):
         self.objects = set()
         self.greens = dict()
