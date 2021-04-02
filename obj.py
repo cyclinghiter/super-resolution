@@ -4,7 +4,32 @@ import matplotlib.pyplot as plt
 import function
 
 class _point_object:
-    """ point object to cal green function """
+    """ 
+    Abstract point object
+    
+    Parameters
+    ---------------------------------------------------
+    ---------------------------------------------------
+    x, y, z : position of point object
+    
+    ---------------------------------------------------
+    Ex, Ey, Ez : E field of point object at position (x,y,z)
+    
+    
+    
+    Methods
+    --------------------------------------------------
+    --------------------------------------------------
+    clear : initialize measured values
+    
+    ---------------------------------------------------
+    displacement : calculate r vector of self and other object
+    distance : absolute value of the displacement
+    
+    ---------------------------------------------------
+    green : calculate green function using displacement and distance
+    
+    """
     def __init__(self, x ,y, z, mode=None):
         self.x = x
         self.y = y
@@ -64,7 +89,9 @@ class _point_object:
             return E
             
 class Source(_point_object):
-    """Point source antenna"""
+    
+    """ Abstract class of Source object. Simply add the point object property power"""
+    
     def __init__(self, x, y, z, power):
         super(Source, self).__init__(x ,y, z)
         self._power = power
@@ -77,11 +104,9 @@ class Source(_point_object):
     def power(self, value):
         self._power = value
 
-    def copy(self):
-        new = Source(self.x, self.y, self.z, self.power)
-        return new
-
 class Antenna(Source):
+    """ Antenna Object. same as Source."""
+    
     def __init__(self, x, y, z , power):
         super(Antenna, self).__init__(x,y,z, power)
 
@@ -90,7 +115,7 @@ class Antenna(Source):
         return new
 
 class Dipole(Source):
-    """passive source. act like antenna if power is mesured."""
+    """passive source. act like antenna if E field in. else power equals 0. """
     def __init__(self, x, y, z, alpha):
         super(Dipole, self).__init__(x,y,z, 0)
         self.alpha = alpha
@@ -126,6 +151,30 @@ class Dipole(Source):
         self.Ez = 0 
 
 class _array_object():
+    """
+    Abstract array object. contains SMM and FieldRecorder.
+    Main function of this class is calculating green function with other objects.
+    
+    
+    Parameters
+    ---------------------------------------------------
+    ---------------------------------------------------
+    x, y, z : position array. dtype : ndarray, ndim = 3
+        
+    Methods
+    --------------------------------------------------
+    --------------------------------------------------
+    clear : initialize measured values
+    
+    ---------------------------------------------------
+    displacement : calculate r vector of self and other object
+    distance : absolute value of the displacement
+    
+    ---------------------------------------------------
+    green : calculate green function using displacement and distance
+    
+    """
+    
     def __init__(self, x, y, z):
         self.x, self.y, self.z = np.meshgrid(x,y,z)
         self.shape = self.x.shape
@@ -158,8 +207,40 @@ class _array_object():
         return E    
         
 class SMMarray(_array_object):
-    """SMM cell array"""
-    def __init__(self, x, y ,z, dx, dy, amp, k0, pattern, phase = np.pi):
+    """
+    SMM cell array. it's normal vector is always on the z axis.
+    it's green function is approximated as Dipole. 
+    Modulated E field is determined only the strength of the E field. 
+    It is invariant with the direciton of EM wave.
+    
+    the cell which is switched on does not change phase of a wave, but the amplitude is reduced
+    the cell which is switched off does not change amplitude of a wave, but changes the phase. 
+    
+    Parameters
+    ---------------------------------------------------
+    ---------------------------------------------------
+    x, y, z : center of position
+    ---------------------------------------------------
+    dx, dy: distance between two cell. 
+    ---------------------------------------------------
+    k0 : default modulation wavevector.
+    ---------------------------------------------------
+    pattern : pattern of SMMarray
+    ---------------------------------------------------
+    amp : power amplitude by modulation if cell is on
+    ---------------------------------------------------
+    phase : phase shift by modulation if cell is off 
+    
+    
+    Method:
+    ---------------------------------------------------
+    ---------------------------------------------------
+    Green function calculation is the main function of this object. 
+    it is defined in its parent class, _array_object
+    
+    
+    """
+    def __init__(self, x, y ,z, dx, dy, k0, pattern, amp = 0.7, phase = np.pi):
         self.dx = dx
         self.dy = dy
         self.k0 = k0
@@ -206,15 +287,18 @@ class FieldRecorder(_array_object):
     # def clear(self):
     #     self.S11 = np.zeros(self.shape, dtype='complex128')
         
-class PlaneWaveGenerator:
+class PlaneWaveGenerator(Source):
+    """
+    plane wave generator which can determine wave vector.
+    Distance between the plane that has normal vector k and position (x,y,z) and a point
+    determines phase of the wave.
+    
+    """
     def __init__(self, x, y, z, kx, ky, kz, power=1):
-        self.x = x
-        self.y = y
-        self.z = z
+        super(PlaneWaveGenerator, self).__init__(self, x,y,z, power)
         self.kx = kx
         self.ky = ky
         self.kz = kz
-        self.power = power
         
     @property
     def k0(self):
@@ -235,5 +319,4 @@ class PlaneWaveGenerator:
         r = self.distance(object)
         green = np.exp(1J * self.k0 * r)
         return green
-        
         
