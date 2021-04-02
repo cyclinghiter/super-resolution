@@ -299,7 +299,7 @@ class PlaneWaveGenerator(Source):
     
     """
     def __init__(self, x, y, z, kx, ky, kz, power=1):
-        super(PlaneWaveGenerator, self).__init__(self, x,y,z, power)
+        super(PlaneWaveGenerator, self).__init__(x,y,z, power)
         self.kx = kx
         self.ky = ky
         self.kz = kz
